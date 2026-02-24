@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>our206</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f8f7f4;
+        --text: #1f1f1f;
+        --accent: #c9c2b4;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, #ffffff 0%, transparent 45%),
+          linear-gradient(180deg, var(--bg) 0%, #f2f0ea 100%);
+      }
+
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 2rem 1rem 2.5rem;
+      }
+
+      h1 {
+        margin: 0 0 1.25rem;
+        text-align: center;
+        font-size: clamp(2.4rem, 6vw, 4rem);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .calendar-frame {
+        display: block;
+        width: 100%;
+        max-width: 900px;
+        height: min(72vh, 680px);
+        margin: 0 auto;
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>our206</h1>
+      <iframe
+        class="calendar-frame"
+        src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&showCalendars=0&src=b3VyMjA2d2FAZ21haWwuY29t&color=%23039be5"
+        frameborder="0"
+        scrolling="no"
+        title="our206 Google Calendar"
+      ></iframe>
+    </main>
+  </body>
+</html>
