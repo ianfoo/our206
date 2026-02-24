@@ -12,9 +12,8 @@
     />
     <style>
       :root {
-        --bg: #f8f7f4;
-        --text: #1f1f1f;
-        --accent: #c9c2b4;
+        --text: #f6f2ea;
+        --accent: rgba(255, 245, 224, 0.55);
       }
 
       * {
@@ -26,15 +25,36 @@
         min-height: 100vh;
         font-family: "Cormorant Garamond", Georgia, serif;
         color: var(--text);
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: -3%;
+        z-index: -2;
+        background: url("./images/skoiberg.jpeg") center center / cover no-repeat;
+        filter: blur(1.2px) brightness(0.76) contrast(0.9) saturate(0.95);
+        transform: scale(1.04);
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
         background:
-          radial-gradient(circle at top left, #ffffff 0%, transparent 45%),
-          linear-gradient(180deg, var(--bg) 0%, #f2f0ea 100%);
+          radial-gradient(circle at top, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
+          linear-gradient(180deg, rgba(10, 9, 8, 0.15), rgba(10, 9, 8, 0.45));
       }
 
       main {
         max-width: 980px;
         margin: 0 auto;
         padding: 2rem 1rem 2.5rem;
+        position: relative;
+        z-index: 1;
       }
 
       h1 {
@@ -42,31 +62,45 @@
         text-align: center;
         font-size: clamp(2.4rem, 6vw, 4rem);
         font-weight: 700;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.06em;
+        color: #fff7e8;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+      }
+
+      .calendar-shell {
+        width: 100%;
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 0.5rem;
+        border: 1px solid var(--accent);
+        border-radius: 12px;
+        background: rgba(255, 251, 243, 0.12);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
       }
 
       .calendar-frame {
         display: block;
         width: 100%;
-        max-width: 900px;
         height: min(72vh, 680px);
-        margin: 0 auto;
-        border: 1px solid var(--accent);
-        border-radius: 6px;
-        background: #fff;
+        border: 0;
+        border-radius: 8px;
+        opacity: 0.94;
       }
     </style>
   </head>
   <body>
     <main>
       <h1>our206</h1>
-      <iframe
-        class="calendar-frame"
-        src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&showCalendars=0&src=b3VyMjA2d2FAZ21haWwuY29t&color=%23039be5"
-        frameborder="0"
-        scrolling="no"
-        title="our206 Google Calendar"
-      ></iframe>
+      <div class="calendar-shell">
+        <iframe
+          class="calendar-frame"
+          src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&showCalendars=0&src=b3VyMjA2d2FAZ21haWwuY29t&color=%23039be5"
+          frameborder="0"
+          scrolling="no"
+          title="our206 Google Calendar"
+        ></iframe>
+      </div>
     </main>
   </body>
 </html>
