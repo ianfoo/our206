@@ -14,6 +14,7 @@ The script:
 3. Generates and persists stable UIDs (in a `UID` column and event description marker) to match rows to events across runs.
 4. Moves past events from `Concerts` to `Past Concerts`.
 5. Provides utility functions for importing past concerts and purging future events (manual use only).
+6. Normalizes venue aliases (for example `Nectar` -> `Nectar Lounge`) and writes canonical names back to the sheet.
 
 ## Expected Sheet Structure
 
@@ -70,6 +71,34 @@ Each event is tagged in description with:
 - `[our206_uid]:<hash>`
 
 That UID is also written to the `UID` sheet column. Matching uses this marker, so event titles/notes can change while identity stays stable.
+
+## Venue Normalization
+
+The script normalizes venue names before:
+
+- UID generation
+- location/address lookup
+- calendar create/update
+
+Normalization rules live in `our206-calendar-sync.gs`:
+
+- `VENUE_ALIASES` for exact/slang mappings
+- `VENUE_REGEX_RULES` for fuzzy matching variants
+
+Matching order is:
+
+1. exact canonical match
+2. exact alias match
+3. regex fuzzy rules (ordered; first match wins)
+4. exact normalized canonical fallback
+
+Examples:
+
+- `Nectar` -> `Nectar Lounge`
+- `Sodo Showbox` -> `Showbox SoDo`
+- `Shitbox` -> `Showbox SoDo`
+
+During sync, if a row uses an alias, the canonical venue name is written back into the `Concerts` sheet automatically.
 
 ## Safety Notes
 

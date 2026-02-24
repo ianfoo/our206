@@ -32,10 +32,15 @@ const CFG = {
 };
 
 const VENUE_ADDRESS = {
+  "Airport Tavern": "5406 S Tacoma Way, Tacoma, WA 98409",
   "Chop Suey": "1325 E Madison St, Seattle, WA 98122",
   "Clock-Out Lounge": "4864 Beacon Ave S, Seattle, WA 98108",
+  "Crystal Ballroom": "1332 W Burnside St, Portland, OR 97209",
   "Edmonds Center for the Arts": "410 4th Ave N, Edmonds, WA 98020",
+  "El Corazon": "109 Eastlake Avenue East, Seattle, WA 98109",
+  "Funhouse": "109 Eastlake Avenue East, Seattle, WA 98109",
   "Hidden Hall": "400 N 35th St, Seattle, WA 98103",
+  "Moda Center": "1 N Center Ct St, Portland, OR 97227",
   "Moore Theatre": "1932 2nd Ave, Seattle, WA 98101",
   "Nectar Lounge": "412 N 36th St, Seattle, WA 98103",
   "Neptune Theatre": "1303 NE 45th St, Seattle, WA 98105",
@@ -43,14 +48,103 @@ const VENUE_ADDRESS = {
   "Paramount Theatre": "911 Pine St, Seattle, WA 98101",
   "Pony": "1221 E Madison St, Seattle, WA 98122",
   "Q Nightclub": "1426 Broadway, Seattle, WA 98122",
+  "Revolution Hall": "1300 SE Stark St, Portland, OR 97214",
   "Showbox SoDo": "1700 1st Ave S, Seattle, WA 98134",
+  "Spanish Ballroom at Elks Temple": "565 Broadway, Tacoma, WA 98402",
   "Substation Seattle": "645 NW 45th St, Seattle, WA 98107",
+  "The Get Down": "680 SE 6th Ave, Portland, OR 97214",
   "The Chapel": "4649 Sunnyside Ave N, Seattle, WA 98103",
   "The Crocodile": "2505 1st Ave, Seattle, WA 98121",
   "The Showbox": "1426 1st Ave, Seattle, WA 98101",
   "Town Hall Seattle": "1119 8th Ave, Seattle, WA 98101",
-  "Tractor Tavern": "5213 Ballard Ave NW, Seattle, WA 98107"
+  "Tractor Tavern": "5213 Ballard Ave NW, Seattle, WA 98107",
+  "WaMu Theater": "800 Occidental Ave S, Seattle, WA 98134",
+  "Wild Buffalo": "208 W Holly St, Bellingham, WA 98225",
+  "Wonder Ballroom": "128 NE Russell St, Portland, OR 97212"
 };
+
+// Alias map for venue normalization.
+// Keys are normalized via normalize_(), values must be canonical venue names.
+const VENUE_ALIASES = {
+  "nectar": "Nectar Lounge",
+  "nectar lounge": "Nectar Lounge",
+  "the nectar lounge": "Nectar Lounge",
+  "neptune": "Neptune Theatre",
+  "paramount": "Paramount Theatre",
+  "moore": "Moore Theatre",
+  "croc": "The Crocodile",
+  "crocodile": "The Crocodile",
+  "el corazon": "El Corazon",
+  "el corazon seattle": "El Corazon",
+  "el corazon funhouse": "El Corazon",
+  "funhouse": "Funhouse",
+  "the funhouse": "Funhouse",
+  "fun house": "Funhouse",
+  "the funhouse el corazon": "Funhouse",
+  "wamu": "WaMu Theater",
+  "wa mu": "WaMu Theater",
+  "wamu theater": "WaMu Theater",
+  "wamu theatre": "WaMu Theater",
+  "lumen field event center": "WaMu Theater",
+  "airport tavern tacoma": "Airport Tavern",
+  "airport": "Airport Tavern",
+  "spanish ballroom": "Spanish Ballroom at Elks Temple",
+  "elks temple": "Spanish Ballroom at Elks Temple",
+  "mcmenamins elks temple": "Spanish Ballroom at Elks Temple",
+  "moda": "Moda Center",
+  "moda center": "Moda Center",
+  "the get down": "The Get Down",
+  "get down": "The Get Down",
+  "revolution": "Revolution Hall",
+  "revolution hall": "Revolution Hall",
+  "crystal": "Crystal Ballroom",
+  "crystal ballroom": "Crystal Ballroom",
+  "wonder": "Wonder Ballroom",
+  "wonder ballroom": "Wonder Ballroom",
+  "wild buffalo": "Wild Buffalo",
+  "showbox sodo": "Showbox SoDo",
+  "sodo showbox": "Showbox SoDo",
+  "showbox so do": "Showbox SoDo",
+  "shitbox": "Showbox SoDo",
+  "the showbox sodo": "Showbox SoDo",
+  "showbox downtown": "The Showbox",
+  "showbox market": "The Showbox",
+  "the showbox": "The Showbox"
+};
+
+// Ordered regex rules for fuzzy venue normalization (after exact aliases).
+// Operates on normalized venue text (lowercase, punctuation stripped).
+const VENUE_REGEX_RULES = [
+  { re: /\bshowbox\b.*\bsodo\b|\bsodo\b.*\bshowbox\b|\bso do\b.*\bshowbox\b|\bshowbox\b.*\bso do\b|\bshitbox\b/, canonical: "Showbox SoDo" },
+  { re: /\bshowbox\b/, canonical: "The Showbox" },
+  { re: /\bnectar\b/, canonical: "Nectar Lounge" },
+  { re: /\bneptune\b/, canonical: "Neptune Theatre" },
+  { re: /\bneumos?\b/, canonical: "Neumos" },
+  { re: /\bparamount\b/, canonical: "Paramount Theatre" },
+  { re: /\bmoore\b/, canonical: "Moore Theatre" },
+  { re: /\bcroc(?:odile)?\b/, canonical: "The Crocodile" },
+  { re: /\bel\s*coraz(?:o|ó)n\b|\bel corazon\b/, canonical: "El Corazon" },
+  { re: /\bfun\s*house\b|\bfunhouse\b/, canonical: "Funhouse" },
+  { re: /\bwa\s*mu\b|\bwamu\b|\blumen field event center\b/, canonical: "WaMu Theater" },
+  { re: /\bairport tavern\b|\bairport\b.*\btacoma\b/, canonical: "Airport Tavern" },
+  { re: /\bspanish ballroom\b|\belks temple\b/, canonical: "Spanish Ballroom at Elks Temple" },
+  { re: /\bmoda center\b|\bmoda\b/, canonical: "Moda Center" },
+  { re: /\bthe get down\b|\bget down\b/, canonical: "The Get Down" },
+  { re: /\brevolution hall\b|\brevolution\b/, canonical: "Revolution Hall" },
+  { re: /\bcrystal ballroom\b|\bcrystal\b/, canonical: "Crystal Ballroom" },
+  { re: /\bwonder ballroom\b|\bwonder\b/, canonical: "Wonder Ballroom" },
+  { re: /\bwild buffalo\b/, canonical: "Wild Buffalo" },
+  { re: /\btractor\b/, canonical: "Tractor Tavern" },
+  { re: /\bsubstation\b/, canonical: "Substation Seattle" },
+  { re: /\bclock out\b|\bclockout\b/, canonical: "Clock-Out Lounge" },
+  { re: /\bchop suey\b|\bchopsuey\b/, canonical: "Chop Suey" },
+  { re: /\btown hall\b/, canonical: "Town Hall Seattle" },
+  { re: /\bhidden hall\b/, canonical: "Hidden Hall" },
+  { re: /\bthe chapel\b|\bchapel\b/, canonical: "The Chapel" },
+  { re: /\bpony\b/, canonical: "Pony" },
+  { re: /\bq nightclub\b|\bq night club\b/, canonical: "Q Nightclub" },
+  { re: /\bedmonds center for the arts\b|\bedmonds.*arts\b|\beca\b/, canonical: "Edmonds Center for the Arts" }
+];
 
 function onOpen() {
   SpreadsheetApp.getUi()
@@ -228,6 +322,7 @@ function syncUpcomingEvents_(opts) {
 
     const desired = new Map();
     const uidWrites = [];
+    const venueWrites = [];
 
     for (let r = firstDataIdx0; r < values.length; r++) {
       const row = values[r];
@@ -236,7 +331,8 @@ function syncUpcomingEvents_(opts) {
       const dateCell = row[idx.date];
       const dateDisplay = displayValues[r][idx.date];
       const artist = String(row[idx.artist] || "").trim();
-      const venue = String(row[idx.venue] || "").trim();
+      const venueRaw = String(row[idx.venue] || "").trim();
+      const venue = canonicalVenue_(venueRaw);
       if (!dateCell || !artist || !venue) continue;
 
       const dayKey = coerceSheetDayKey_(dateCell, dateDisplay, tz);
@@ -248,6 +344,9 @@ function syncUpcomingEvents_(opts) {
       if (uidColIndex !== null) {
         const currentUid = String(row[uidColIndex] || "").trim();
         if (currentUid !== uid) uidWrites.push({ row: r + 1, col: uidColIndex + 1, value: uid });
+      }
+      if (venueRaw && venueRaw !== venue) {
+        venueWrites.push({ row: r + 1, col: idx.venue + 1, value: venue });
       }
 
       const rating = String(row[idx.rating] || "").trim();
@@ -266,6 +365,8 @@ function syncUpcomingEvents_(opts) {
 
     uidWrites.forEach(w => sheet.getRange(w.row, w.col).setValue(w.value));
     if (uidWrites.length) log.push(`UID updates written to sheet: ${uidWrites.length}`);
+    venueWrites.forEach(w => sheet.getRange(w.row, w.col).setValue(w.value));
+    if (venueWrites.length) log.push(`Venue normalizations written to sheet: ${venueWrites.length}`);
 
     const existing = cal.getEvents(today, horizon);
     const existingByUid = new Map();
@@ -360,7 +461,7 @@ function buildDescription_(notes, rating, ticket) {
 }
 
 function buildLocation_(venue) {
-  const v = String(venue || "").trim();
+  const v = canonicalVenue_(venue);
   const addr = VENUE_ADDRESS[v];
   return addr ? `${v}\n${addr}` : v;
 }
@@ -374,8 +475,37 @@ function normalize_(s) {
 }
 
 function buildUid_(date, artist, venue) {
-  const seed = `${formatDate_(date)}|${normalize_(artist)}|${normalize_(venue)}`;
+  const seed = `${formatDate_(date)}|${normalize_(artist)}|${normalize_(canonicalVenue_(venue))}`;
   return sha1_(seed).slice(0, 24);
+}
+
+function canonicalVenue_(venue) {
+  const raw = String(venue || "").trim();
+  if (!raw) return "";
+
+  // Exact canonical match wins.
+  if (VENUE_ADDRESS[raw]) return raw;
+
+  const key = normalize_(raw);
+  if (VENUE_ALIASES[key]) return VENUE_ALIASES[key];
+
+  const fuzzy = matchVenueByRegex_(key);
+  if (fuzzy) return fuzzy;
+
+  // Soft fallback: if normalized text matches a known venue's normalized form.
+  const canonical = Object.keys(VENUE_ADDRESS).find(v => normalize_(v) === key);
+  return canonical || raw;
+}
+
+function matchVenueByRegex_(normalizedVenue) {
+  const v = ` ${String(normalizedVenue || "").trim()} `;
+  if (!v.trim()) return "";
+
+  for (let i = 0; i < VENUE_REGEX_RULES.length; i++) {
+    const rule = VENUE_REGEX_RULES[i];
+    if (rule.re.test(v)) return rule.canonical;
+  }
+  return "";
 }
 
 function attachUidToDescription_(uid, userDescription, uidMarkerPrefix) {
@@ -751,7 +881,7 @@ function importPastConcerts_our206() {
     const dateCell = row[idx.date];
     const dateDisplay = displayValues[i][idx.date];
     const artist = String(row[idx.artist] || "").trim();
-    const venue = String(row[idx.venue] || "").trim();
+    const venue = canonicalVenue_(row[idx.venue]);
     if (!dateCell || !artist || !venue) continue;
 
     const dayKey = coerceSheetDayKey_(dateCell, dateDisplay, tz);
