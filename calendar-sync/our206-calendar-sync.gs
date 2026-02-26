@@ -33,6 +33,7 @@ const CFG = {
 
 const VENUE_ADDRESS = {
   "Airport Tavern": "5406 S Tacoma Way, Tacoma, WA 98409",
+  "Baba Yaga": "124 S Washington St, Seattle, WA 98104",
   "Chop Suey": "1325 E Madison St, Seattle, WA 98122",
   "Clock-Out Lounge": "4864 Beacon Ave S, Seattle, WA 98108",
   "Crystal Ballroom": "1332 W Burnside St, Portland, OR 97209",
@@ -106,6 +107,7 @@ const VENUE_ALIASES = {
   "sodo showbox": "Showbox SoDo",
   "showbox so do": "Showbox SoDo",
   "shitbox": "Showbox SoDo",
+  "sodobox": "Showbox SoDo",
   "the showbox sodo": "Showbox SoDo",
   "showbox downtown": "The Showbox",
   "showbox market": "The Showbox",
