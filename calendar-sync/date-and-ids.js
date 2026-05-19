@@ -121,4 +121,3 @@ function addDays_(d, days) {
 function sortConcertsByDateIfPossible_(sheet) {
   try { sortSheetByDate_(sheet); } catch (err) { Logger.log(`Sort skipped: ${err}`); }
 }
-

@@ -1,117 +1,201 @@
-# Calendar Sync Script
+# Our206 Concert Calendar Automation
 
-This directory contains a Google Apps Script used to sync a Google Sheet with a Google Calendar for `our206`.
+A lightweight Google Apps Script system for managing concert and event
+tracking in Google Sheets and synchronizing upcoming events into a
+Google Calendar.
 
-- Script file: `our206-calendar-sync.gs`
-- Sync direction: Sheet -> Calendar (for upcoming events), plus maintenance helpers
+This project uses:
+- Google Sheets as the canonical data store
+- Google Forms as an optional intake UI
+- Google Calendar as a downstream projection/sync target
+- Apps Script triggers for automation orchestration
 
-## Purpose
+The system supports:
+- Event intake from a Google Form
+- Venue normalization
+- UID-based calendar reconciliation
+- Debounced calendar synchronization
+- Automatic movement of past events into an archive sheet
+- Processing of messy contributor updates via an ingestion sheet
+- Automatic event sorting and maintenance tasks
 
-The script:
+---
 
-1. Reads the `Concerts` sheet as the source of truth for upcoming shows.
-2. Creates/updates/deletes tagged calendar events so the calendar matches the sheet.
-3. Generates and persists stable UIDs (in a `UID` column and event description marker) to match rows to events across runs.
-4. Moves past events from `Concerts` to `Past Concerts`.
-5. Provides utility functions for importing past concerts and purging future events (manual use only).
-6. Normalizes venue aliases (for example `Nectar` -> `Nectar Lounge`) and writes canonical names back to the sheet.
+## Sheet Structure
 
-## Expected Sheet Structure
+### Concerts
 
-The spreadsheet should include:
+Primary canonical event store.
 
-- `Concerts` sheet
-- `Past Concerts` sheet (created automatically if missing)
+Expected columns:
 
-Header detection is automatic, but headers should include at least:
+| Date | Artist | Venue | Skoi Rating | Notes | Ticket Link | UID | Added On |
+|------|------|------|------|------|------|------|------|
 
-- `Date`
-- `Artist`
-- `Venue`
-- `Skoi` (rating)
-- `Notes`
-- `Ticket`
+Default header row: 3
 
-The script also ensures a `UID` column exists.
+### Past Concerts
 
-## Setup
+Archive sheet for events whose date is before today.
 
-1. Open your Google Sheet.
-2. Go to `Extensions -> Apps Script`.
-3. Replace existing code with `our206-calendar-sync.gs`.
-4. Save the project.
-5. In Apps Script, set project timezone to match your sheet/calendar timezone (for example `America/Los_Angeles`).
-6. In `Project Settings -> Script properties`, add:
-   - Key: `OUR206_CALENDAR_ID`
-   - Value: your calendar ID (for example `our206wa@gmail.com`)
-7. Run `setUpOur206` once from the Apps Script editor.
-8. Approve requested permissions.
+Must match the schema of `Concerts`.
 
-After setup, reload the sheet and use the `Our206` custom menu.
+### Incoming Raw
 
-## Daily Use
+Optional ingestion sheet used for batch contributor updates and parsing
+semi-structured source lines.
 
-From the `Our206` menu:
+Typical source format:
 
-- `Sync now`: live sync to calendar
-- `Dry run sync`: logs proposed creates/updates/deletes without calendar writes
-- `Move past events to Past Concerts`: archives old rows
-- `Move past events + Sync now`: archive then sync
-- `Show last run log`: view the latest sync summary
+```text
+5/23: SOME BAND @ Neumos ✅
+```
 
-The script also installs:
+The ingestion processor:
+- parses dates/artists/venues
+- normalizes venues
+- de-shoutifies artist names
+- deduplicates against canonical events
+- appends valid rows into `Concerts`
 
-- On-edit debounce trigger (`our206_onEdit` -> delayed sync)
-- Daily maintenance trigger (`our206_dailyMaintenance`)
+### Venue Map
 
-## UID Matching
+Optional normalization/reference sheet.
 
-Each event is tagged in description with:
+Expected columns:
 
-- `[our206_uid]:<hash>`
+| Raw Venue | Normalized Venue | Address (optional) |
 
-That UID is also written to the `UID` sheet column. Matching uses this marker, so event titles/notes can change while identity stays stable.
+Used to:
+- normalize venue names
+- enrich calendar event locations with addresses
 
-## Venue Normalization
+Fallback venue mappings are also embedded in source.
 
-The script normalizes venue names before:
+---
 
-- UID generation
-- location/address lookup
-- calendar create/update
+## Trigger Model
 
-Normalization rules live in `our206-calendar-sync.gs`:
+### onEdit → debounced sync
 
-- `VENUE_ALIASES` for exact/slang mappings
-- `VENUE_REGEX_RULES` for fuzzy matching variants
+Edits to the canonical event sheet schedule a delayed sync operation.
 
-Matching order is:
+Rapid edits coalesce into a single eventual calendar synchronization.
 
-1. exact canonical match
-2. exact alias match
-3. regex fuzzy rules (ordered; first match wins)
-4. exact normalized canonical fallback
+Flow:
 
-Examples:
+```text
+edit
+  → our206_onEdit
+      → maybeSetAddedOn_
+      → scheduleDebouncedSync_
+          → create delayed trigger
+              → our206_debouncedSync
+                  → syncUpcomingEvents
+```
 
-- `Nectar` -> `Nectar Lounge`
-- `Sodo Showbox` -> `Showbox SoDo`
-- `Shitbox` -> `Showbox SoDo`
+Debounced sync triggers self-clean after execution.
 
-During sync, if a row uses an alias, the canonical venue name is written back into the `Concerts` sheet automatically.
+### Daily maintenance
 
-## Safety Notes
+A scheduled maintenance trigger:
+- moves past events into `Past Concerts`
+- compacts/sorts sheets
+- runs a calendar sync
 
-- `purgeAllFutureEvents_our206_paced()` is destructive: it deletes future events on the configured calendar.
-- Use purge only for recovery/reset workflows.
-- Keep `OUR206_CALENDAR_ID` in Script Properties rather than hardcoding it in source.
+---
 
-## Troubleshooting
+## Calendar Sync Behavior
 
-- Wrong dates/day shifts:
-  - Confirm Apps Script project timezone matches the spreadsheet timezone.
-  - Run `Dry run sync` and compare logged `CREATED: YYYY-MM-DD` values with sheet dates.
-- Unexpected large create/delete counts:
-  - Run one live sync, then run dry run again; counts usually converge after reconciliation.
-- Missing menu:
-  - Reload the sheet after saving script and running setup.
+Upcoming events are synchronized into the configured Google Calendar
+using deterministic UID reconciliation.
+
+UIDs are derived from:
+- event date
+- normalized artist name
+- normalized venue name
+
+The sync process:
+- creates missing events
+- updates changed events
+- removes orphaned events
+- preserves event identity across edits
+
+Calendar event descriptions contain an embedded hidden UID marker.
+
+---
+
+## Google Form Intake
+
+A Google Form can append events into the canonical `Concerts` sheet.
+
+Current intake mapping:
+
+| Form Field | Concerts Column |
+|------|------|
+| Artist/Event | Artist |
+| Date | Date |
+| Venue | Venue |
+| Ticket Link | Ticket Link |
+| Additional Notes | Notes |
+
+The intake flow:
+- normalizes venues
+- applies row formatting
+- writes Added On timestamps
+- preserves UID handling for downstream sync
+
+---
+
+## Local Development
+
+This project is managed locally using `clasp`.
+
+Useful commands:
+
+```bash
+clasp pull
+clasp push
+clasp open
+```
+
+Recommended:
+- use Git locally
+- avoid editing large logic changes directly in the Apps Script editor
+
+`.clasprc.json` should not be committed.
+
+---
+
+## File Organization
+
+The Apps Script project is split into multiple source files for sanity.
+Apps Script still executes everything in a shared global namespace.
+
+Suggested conceptual boundaries:
+
+- config.js
+- triggers.js
+- calendar.js
+- ingest.js
+- venues.js
+- sheets.js
+- util.js
+
+---
+
+## Operational Notes
+
+This system intentionally favors:
+- low operational overhead
+- free/near-free infrastructure
+- recoverability
+- human readability
+- lightweight automation
+
+It is not intended to be a high-scale multi-user application.
+
+The current implementation works well for:
+- personal concert tracking
+- small-group collaborative event management
+- lightweight calendar publishing workflows

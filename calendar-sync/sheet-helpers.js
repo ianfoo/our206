@@ -21,7 +21,6 @@ function sortSheetByDate_(sheet) {
   sheet.getRange(headerRow + 1, 1, lastRow - headerRow, lastCol).sort({ column: idx.date + 1, ascending: true });
 }
 
-// ---------------------- COMMON HELPERS ----------------------
 
 function getSheetSpec_(sheetKey) {
   const spec = CFG.sheets[sheetKey];
@@ -183,4 +182,3 @@ function ensureColumnCount_(sheet, neededCols) {
   const have = sheet.getLastColumn();
   if (have < neededCols) sheet.insertColumnsAfter(have, neededCols - have);
 }
-

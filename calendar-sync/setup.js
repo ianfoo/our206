@@ -2,8 +2,8 @@ function setUpOur206() { return setupOur206(); }
 
 function setupOur206() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  ensureUidColumn_(getSheet_(ss, SHEET_KEYS.CONCERTS));
-  ensureUidColumn_(ensureSheetByKey_(ss, SHEET_KEYS.PAST_CONCERTS));
+  ensureUidColumn_(getSheet_(ss, SHEET_KEYS.EVENTS));
+  ensureUidColumn_(ensureSheetByKey_(ss, SHEET_KEYS.PAST_EVENTS));
   installOnEditTriggerIfMissing_();
   installDailyTriggerIfMissing_("our206_dailyMaintenance", 3);
   toast_("Our206 setup complete.");
@@ -37,8 +37,4 @@ function ensureVenueMapTab_our206() {
 
   toast_("Venue Map tab is ready.");
 }
-
-// ---------------------- TRIGGERS ----------------------
-
-// Handle form submissions: copy form values from form sheet into main concert/event sheet.
 

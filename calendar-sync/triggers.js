@@ -1,6 +1,6 @@
 function onFormSubmit(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const targetSheet = getSheet_(ss, SHEET_KEYS.CONCERTS);
+  const targetSheet = getSheet_(ss, SHEET_KEYS.EVENTS);
 
   const [
     timestamp,
@@ -52,7 +52,7 @@ function our206_dailyMaintenance() {
 
 function maybeSetAddedOn_(e) {
   const sheet = e.range.getSheet();
-  if (!isSheet_(sheet, SHEET_KEYS.CONCERTS)) return;
+  if (!isSheet_(sheet, SHEET_KEYS.EVENTS)) return;
 
   const row = e.range.getRow();
   if (row <= getHeaderRowForSheet_(sheet)) return;
@@ -83,7 +83,6 @@ function scheduleDebouncedSync_(e) {
     .create();
 }
 
-// ---------------------- INCOMING RAW PROCESSOR ----------------------
 
 function installOnEditTriggerIfMissing_() {
   const exists = ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === "our206_onEdit");
@@ -111,7 +110,4 @@ function clearTriggersByHandler_(handlerName) {
     if (t.getHandlerFunction() === handlerName) ScriptApp.deleteTrigger(t);
   });
 }
-
-// See attached note in chat: this file is a patch block to add rate-limit-aware calendar writes.
-// Paste these helpers into your script and replace the create/update/delete calls as noted.
 

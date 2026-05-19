@@ -1,7 +1,7 @@
 function processIncomingRaw_our206() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const incoming = getSheet_(ss, SHEET_KEYS.INCOMING_RAW);
-  const concerts = getSheet_(ss, SHEET_KEYS.CONCERTS);
+  const concerts = getSheet_(ss, SHEET_KEYS.EVENTS);
 
   const incomingLastRow = incoming.getLastRow();
   if (incomingLastRow < 2) {
@@ -175,6 +175,3 @@ function primaryArtistKey_(artist) {
   const split = s.split(/\s+(?:and)\s+/);
   return split[0].trim();
 }
-
-// ---------------------- CALENDAR SYNC ----------------------
-

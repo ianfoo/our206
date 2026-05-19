@@ -8,8 +8,8 @@ function movePastEvents() {
   const log = [];
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const concerts = getSheet_(ss, SHEET_KEYS.CONCERTS);
-    const past = ensureSheetByKey_(ss, SHEET_KEYS.PAST_CONCERTS);
+    const concerts = getSheet_(ss, SHEET_KEYS.EVENTS);
+    const past = ensureSheetByKey_(ss, SHEET_KEYS.PAST_EVENTS);
 
     ensureUidColumn_(concerts);
     ensureUidColumn_(past);
@@ -57,7 +57,7 @@ function movePastEvents() {
     compactDataSheet_(concerts);
     sortSheetByDate_(concerts);
 
-    log.push(`Move past events: moved ${rowsToMove.length} row(s) to "${getSheetSpec_(SHEET_KEYS.PAST_CONCERTS).name}".`);
+    log.push(`Move past events: moved ${rowsToMove.length} row(s) to "${getSheetSpec_(SHEET_KEYS.PAST_EVENTS).name}".`);
     saveLog_(log);
     toast_(`Moved ${rowsToMove.length} past row(s).`);
   } finally {
@@ -80,7 +80,7 @@ function syncUpcomingEvents_(opts) {
     log.push(dryRun ? "DRY RUN (no calendar changes will be made)" : "LIVE RUN");
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = getSheet_(ss, SHEET_KEYS.CONCERTS);
+    const sheet = getSheet_(ss, SHEET_KEYS.EVENTS);
     ensureUidColumn_(sheet);
     compactDataSheet_(sheet);
     sortSheetByDate_(sheet);
@@ -198,7 +198,6 @@ function syncUpcomingEvents_(opts) {
   }
 }
 
-// ---------------------- SHEET TIDYING ----------------------
 
 function calendarWrite_(fn, label) {
   const MAX_ATTEMPTS = 6;
@@ -241,4 +240,3 @@ function calendarUpdateEvent_(ev, data, label) {
     if (data.description != null) ev.setDescription(data.description);
   }, label || `update ${ev.getTitle()}`);
 }
-

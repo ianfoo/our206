@@ -50,4 +50,3 @@ function clearVenueMapCache_our206() {
   CacheService.getScriptCache().remove("our206_venue_map_v1");
   toast_("Venue map cache cleared.");
 }
-

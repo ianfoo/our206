@@ -20,5 +20,3 @@ function showLastRunLog() {
   const msg = PropertiesService.getScriptProperties().getProperty("LAST_RUN_LOG") || "(no log yet)";
   SpreadsheetApp.getUi().alert(msg);
 }
-
-// ---------------------- SETUP ----------------------

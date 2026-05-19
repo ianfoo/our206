@@ -11,8 +11,8 @@
  * - Logging + custom menu
  *
  * Tabs used:
- * - Concerts
- * - Past Concerts
+ * - Events
+ * - Past Events
  * - Incoming Raw   (optional, for ingestion)
  * - Venue Map      (optional, for venue KV normalization)
  *
@@ -23,8 +23,8 @@
  */
 
 const SHEET_KEYS = {
-  CONCERTS: "concerts",
-  PAST_CONCERTS: "pastConcerts",
+  EVENTS: "events",
+  PAST_EVENTS: "pastEvents",
   INCOMING_RAW: "incomingRaw",
   VENUE_MAP: "venueMap"
 };
@@ -32,12 +32,12 @@ const SHEET_KEYS = {
 const CFG = {
   calendarId: "our206wa@gmail.com",
   sheets: {
-    [SHEET_KEYS.CONCERTS]: {
-      name: "Concerts",
+    [SHEET_KEYS.EVENTS]: {
+      name: "Events",
       headerRow: 3
     },
-    [SHEET_KEYS.PAST_CONCERTS]: {
-      name: "Past Concerts",
+    [SHEET_KEYS.PAST_EVENTS]: {
+      name: "Past Events",
       headerRow: 3
     },
     [SHEET_KEYS.INCOMING_RAW]: {
@@ -144,5 +144,3 @@ const FALLBACK_VENUE_NORMALIZATION = {
   "the showbox": "The Showbox",
   "showbox sodo": "Showbox SoDo"
 };
-
-// ---------------------- MENU ----------------------
