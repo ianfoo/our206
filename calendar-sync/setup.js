@@ -6,6 +6,7 @@ function setupOur206() {
   ensureUidColumn_(ensureSheetByKey_(ss, SHEET_KEYS.PAST_EVENTS));
   installOnEditTriggerIfMissing_();
   installDailyTriggerIfMissing_("our206_dailyMaintenance", 3);
+  installFormSubmitTriggerIfMissing_();
   toast_("Our206 setup complete.");
 }
 
@@ -38,3 +39,15 @@ function ensureVenueMapTab_our206() {
   toast_("Venue Map tab is ready.");
 }
 
+function installFormSubmitTriggerIfMissing_() {
+  const exists = ScriptApp.getProjectTriggers().some(
+    t => t.getHandlerFunction() === "onFormSubmit"
+  );
+
+  if (!exists) {
+    ScriptApp.newTrigger("onFormSubmit")
+      .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+      .onFormSubmit()
+      .create();
+  }
+}
