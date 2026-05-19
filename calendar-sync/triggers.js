@@ -23,6 +23,7 @@ function onFormSubmit(e) {
   ]);
 
   applyConcertRowFormats_(targetSheet, targetSheet.getLastRow());
+  scheduleDebouncedSync_();
 }
 
 function our206_onEdit(e) {
