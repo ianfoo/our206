@@ -652,15 +652,17 @@ function ensureUidColumn_(sheet) {
   const lastCol = sheet.getLastColumn() || 1;
   const headers = sheet.getRange(headerRow, 1, 1, lastCol).getValues()[0]
     .map(h => String(h || "").trim());
-  const lc = headers.map(h => h.toLowerCase());
-
-  const existingIndex = lc.findIndex(h => h === CFG.uidHeader.toLowerCase());
-  if (existingIndex !== -1) return;
+  const uidMatches = findHeaderIndexesExact_(headers, CFG.uidHeader);
+  if (uidMatches.length > 1) {
+    throw new Error(`Multiple UID columns found on header row ${headerRow} in sheet "${sheet.getName()}".`);
+  }
+  if (uidMatches.length === 1) return;
 
   let insertAfterCol = lastCol;
   if (CFG.keepLastColumnHeader && CFG.keepLastColumnHeader.trim()) {
-    const keep = CFG.keepLastColumnHeader.trim().toLowerCase();
-    const keepIdx = lc.findIndex(h => h === keep);
+    const keep = CFG.keepLastColumnHeader.trim();
+    const keepMatches = findHeaderIndexesExact_(headers, keep);
+    const keepIdx = keepMatches.length ? keepMatches[0] : -1;
     if (keepIdx !== -1) {
       insertAfterCol = keepIdx;
       if (insertAfterCol < 1) insertAfterCol = 1;
@@ -699,9 +701,22 @@ function getColumnIndexes_(sheet) {
     ticket: find(CFG.headerMatchers.ticket)
   };
 
-  const uidColIndex = lc.findIndex(h => h === CFG.uidHeader.toLowerCase());
+  const uidMatches = findHeaderIndexesExact_(headers, CFG.uidHeader);
+  if (uidMatches.length > 1) {
+    throw new Error(`Multiple UID columns found on header row ${headerRow} in sheet "${sheet.getName()}".`);
+  }
+  const uidColIndex = uidMatches.length ? uidMatches[0] : -1;
 
   return { idx, uidColIndex: uidColIndex === -1 ? null : uidColIndex, headerRow };
+}
+
+function findHeaderIndexesExact_(headers, target) {
+  const t = String(target || "").trim().toLowerCase();
+  const hits = [];
+  for (let i = 0; i < headers.length; i++) {
+    if (String(headers[i] || "").trim().toLowerCase() === t) hits.push(i);
+  }
+  return hits;
 }
 
 function ensureColumnCount_(sheet, neededCols) {
