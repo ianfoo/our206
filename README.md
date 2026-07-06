@@ -4,7 +4,13 @@ This repo is structured as a monorepo. The website lives in:
 
 - `website/`
 
-The Google Apps Script calendar automation lives in:
+The platform service (canonical event database, import pipeline, calendar
+sync, API) lives in:
+
+- `server/`
+
+The Google Apps Script calendar automation (being replaced by `server/`)
+lives in:
 
 - `calendar-sync/`
 

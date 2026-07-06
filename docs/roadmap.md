@@ -11,7 +11,7 @@ dedup, calendar sync, archival; our206.com is an iframe of the Google
 Calendar. Works, but storage/UI/workflow/sync are all fused into one
 spreadsheet.
 
-## Phase 1 — canonical core
+## Phase 1 — canonical core *(in progress — see `server/`)*
 
 **Goal: the application database becomes the source of truth.**
 

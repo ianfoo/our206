@@ -6,11 +6,7 @@ ADR-lite: decision, rationale, status.
 
 ## D1 — Implementation language: Go (single service)
 
-**Status: recommended, awaiting confirmation.**
-
-The product brief intentionally leaves the language open (Go, Python, or
-other); the venue/retrieval brief assumes a Go application with a Python
-sidecar. Recommendation: **Go** for the application.
+**Status: decided.** (Owner left the choice open; Go selected.)
 
 - Single static binary fits the "low operational overhead, straightforward
   deployment, portability" requirements
@@ -19,8 +15,9 @@ sidecar. Recommendation: **Go** for the application.
 - The Python ecosystem advantage (ML/retrieval tooling) is confined to the
   Phase 5 sidecar, which the venue brief already assigns to Python
 
-If the implementation team prefers Python end-to-end, the architecture
-holds — only this decision changes.
+The service lives in `server/`. SQLite access uses the pure-Go
+`modernc.org/sqlite` driver so builds stay CGO-free and cross-compile
+cleanly.
 
 ## D2 — Database: SQLite (not Postgres/pgvector)
 
@@ -44,8 +41,7 @@ address data. Store the place ID and refresh ~annually to catch moves,
 closures, renames. General web search / embeddings / reranking are for
 Phase 5 semantic features, not venue resolution.
 
-**Open:** which Places provider (Google Places vs alternatives) — pick on
-pricing and place-ID stability when Phase 3 starts.
+Which Places provider to use is still open (see open questions).
 
 ## D4 — Google Calendar is a one-way projection
 
@@ -89,20 +85,40 @@ the shorthand grammar, de-shoutifying, the ✅/! → score (max 4, displayed
 and UID-stable calendar sync. The existing `Venue Map` sheet plus the
 baked-in maps in `calendar-sync/config.js` seed the venue and alias tables.
 
+## D8 — Hosting: Vultr VPS + Coolify
+
+**Status: decided.**
+
+The service deploys as a container to the owner's existing Vultr VPS
+managed with Coolify. This covers the persistent-process needs (bots,
+background jobs, HTTP API) that GitHub Pages cannot. Revisit only if
+requirements outgrow the VPS. The `server/` Dockerfile is the deploy
+artifact; SQLite lives on a persistent volume.
+
+## D9 — Website is server-rendered; static export is an optional projection
+
+**Status: decided.**
+
+Static site generation is not a requirement. The application serves the
+website directly (Phase 2). A simplified static export may be added later
+as one more rich projection of the canonical store — nice to have, not
+load-bearing. The current GitHub Pages site remains in place until Phase 2
+replaces it.
+
+## D10 — Web framework / frontend stack: implementer's choice
+
+**Status: decided (owner is indifferent).**
+
+Chosen when Phase 2 design work starts. Default leaning: server-rendered
+templates from the Go service with minimal client-side JS, consistent with
+the low-ops philosophy. The Phase 1 service already renders a minimal HTML
+event list as a placeholder projection.
+
 ## Open questions
 
-1. **Hosting/runtime target** — the app needs a persistent process (bots,
-   jobs), so GitHub Pages no longer suffices for the whole product. Small
-   VPS vs Fly.io vs home server; affects Phase 1 setup only, not
-   architecture. The static site can stay on Pages until Phase 2 needs
-   server rendering (or the site stays static and reads a published JSON
-   feed).
-2. **Signal transport** — signal-cli / signald / libsignal wrapper; needs a
+1. **Signal transport** — signal-cli / signald / libsignal wrapper; needs a
    dedicated number. Evaluate at Phase 3 start.
-3. **LLM provider & multimodal model** — needed at Phase 3 for
+2. **LLM provider & multimodal model** — needed at Phase 3 for
    classification/extraction; choose then, keep behind an interface.
-4. **Website rendering strategy** — static generation from the canonical
-   store (keeps Pages hosting) vs server-rendered from the API. Decide at
-   Phase 2; the read API exists either way.
-5. **Web framework / frontend stack** — deliberately open until Phase 2
-   design work starts.
+3. **Places provider** — Google Places vs alternatives; pick on pricing and
+   place-ID stability when Phase 3 starts (see D3).
