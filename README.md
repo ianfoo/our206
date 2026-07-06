@@ -4,6 +4,19 @@ This repo is structured as a monorepo. The website lives in:
 
 - `website/`
 
+The Google Apps Script calendar automation lives in:
+
+- `calendar-sync/`
+
+## Direction
+
+our206 is evolving from a shared calendar into a community event platform
+with its own canonical database, AI-assisted intake, editorial review, and
+multiple publishing surfaces. The product vision, architecture, decision
+log, and phased roadmap live in:
+
+- [`docs/`](docs/README.md)
+
 ## Deployment
 
 GitHub Actions deploys `website/` to GitHub Pages via:
